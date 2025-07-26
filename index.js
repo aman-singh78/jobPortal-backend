@@ -3,10 +3,12 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectdb from "./utils/db.js";
+import { register } from "./controllers/user.controller.js";
+const PORT = process.env.PORT || 3000;
 dotenv.config({});
 
 const app = express();
-//middlewares
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -15,7 +17,9 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
-const PORT = process.env.PORT || 3000;
+
+app.post("/register", register);
+
 app.listen(PORT, () => {
   connectdb();
   console.log(`Server running at port ${PORT}`);
