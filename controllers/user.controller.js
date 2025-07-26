@@ -46,6 +46,7 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  console.log(req.body);
   try {
     const { email, password, role } = req.body;
     if (!email || !password || !role) {
@@ -95,7 +96,7 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error("Error in login:", error);
     return res.status(500).json({
-      message: "Something went wrong",
+      message: "Something went wrong" + error.message,
       success: false,
     });
   }
@@ -120,25 +121,24 @@ export const updateProfile = async (req, res) => {
   try {
     const { fullName, email, phoneNumber, bio, skills } = req.body;
     const file = req.file;
-    if (!fullName || !email || !bio || !phoneNumber || !skills) {
-      return res.status(400).json({
-        message: "Something is missing",
-        success: false,
-      });
+
+    let skillsArray;
+    if (skills) {
+      skillsArray = skills.split(",");
     }
 
-    const skillsArray = skills.split(",");
     const userId = req.id;
 
     let user = await User.findById(userId);
     if (!user) {
       return res.staus(400).json({ message: "User not found", success: false });
     }
-    (user.fullName = fullName),
-      (user.email = email),
-      (user.phoneNumber = phoneNumber),
-      (user.profile.bio = bio),
-      (user.profile.skills = skillsArray);
+
+    if (fullName) user.fullName = fullName;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+    if (bio) user.profile.bio = bio;
+    if (skills) user.profile.skills = skillsArray;
 
     await user.save();
     user = {
@@ -154,5 +154,8 @@ export const updateProfile = async (req, res) => {
       .json({ message: "profile updated successfully", user, success: true });
   } catch (error) {
     console.log(error);
+    return res
+      .status(400)
+      .json({ message: "Update was unsuccessfull" + error.message });
   }
 };
