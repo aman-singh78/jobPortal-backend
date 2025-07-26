@@ -56,9 +56,7 @@ export const login = async (req, res) => {
     }
     let user = await User.findOne({ email });
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "Invalid credentials", success: false });
+      return res.status(400).json({ message: "No User found", success: false });
     }
     const isPasswordMatched = await bcrypt.compare(password, user.password);
     if (!isPasswordMatched) {
@@ -80,7 +78,7 @@ export const login = async (req, res) => {
     });
     user = {
       _id: user._id,
-      fullName: _user.fullName,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
       phoneNumber: user.phoneNumber,
@@ -95,10 +93,66 @@ export const login = async (req, res) => {
       })
       .json({ message: `Welcome back ${user.fullName}`, user, success: true });
   } catch (error) {
-    console.error("Error in register:", error);
+    console.error("Error in login:", error);
     return res.status(500).json({
       message: "Something went wrong",
       success: false,
     });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    return res
+      .status(200)
+      .cookie("token", "", { maxAge: 0 })
+      .json({ message: "logout successfull", success: true });
+  } catch (error) {
+    console.error("Error in logout:", error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      success: false,
+    });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { fullName, email, phoneNumber, bio, skills } = req.body;
+    const file = req.file;
+    if (!fullName || !email || !bio || !phoneNumber || !skills) {
+      return res.status(400).json({
+        message: "Something is missing",
+        success: false,
+      });
+    }
+
+    const skillsArray = skills.split(",");
+    const userId = req.id;
+
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.staus(400).json({ message: "User not found", success: false });
+    }
+    (user.fullName = fullName),
+      (user.email = email),
+      (user.phoneNumber = phoneNumber),
+      (user.profile.bio = bio),
+      (user.profile.skills = skillsArray);
+
+    await user.save();
+    user = {
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      phoneNumber: user.phoneNumber,
+      profile: user.profile,
+    };
+    return res
+      .status(200)
+      .json({ message: "profile updated successfully", user, success: true });
+  } catch (error) {
+    console.log(error);
   }
 };

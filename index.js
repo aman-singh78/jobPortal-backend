@@ -18,8 +18,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.post("/register", register);
-
 app.listen(PORT, () => {
   connectdb();
   console.log(`Server running at port ${PORT}`);
