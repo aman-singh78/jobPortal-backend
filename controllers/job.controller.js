@@ -65,7 +65,9 @@ export const getAllJobs = async (req, res) => {
       ],
     };
 
-    const jobs = await Job.find(query);
+    const jobs = await Job.find(query)
+      .populate({ path: "company" })
+      .sort({ createdAt: -1 });
     if (!jobs) {
       return res.status(404).json({ message: "Job not found", success: false });
     }
@@ -105,7 +107,7 @@ export const getAdminJobs = async (req, res) => {
     if (!jobs) {
       return res.status(404).json({ message: "Job not found", success: false });
     }
-    return res.status(200).josn({ jobs, success: true });
+    return res.status(200).json({ jobs, success: true });
   } catch (error) {
     console.error("Error creating job:", error);
     return res.status(500).json({
